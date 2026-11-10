@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4B Dibujo: Uno o más de uno</title>
+<style>
+  :root{ --ink:#1f2340; --soft:#5a5f80; --bg:#fff8ec; --c:#e4572e; --green:#1f9d55; }
+  *{box-sizing:border-box}
+  body{margin:0; font-family:"Segoe UI","Trebuchet MS",Arial,sans-serif; color:var(--ink); background:var(--bg)}
+  .bar{background:var(--c); color:#fff; padding:12px 20px; font-size:clamp(20px,2.2vw,30px); font-weight:800}
+  main{max-width:1000px; margin:0 auto; padding:18px 16px 40px; display:flex; flex-direction:column; gap:16px; align-items:center; text-align:center}
+  .card{background:#fff; border:3px solid var(--c); border-radius:20px; padding:.6em 1.2em; font-size:clamp(19px,2vw,28px); font-weight:700}
+  .card .en{font-size:.8em; color:var(--soft); font-weight:500; margin-top:.25em}
+  .bank{display:flex; gap:12px; flex-wrap:wrap; justify-content:center}
+  .word{background:#fff; border:none; border-bottom:6px solid var(--c); border-radius:16px; padding:8px 14px; min-width:150px; cursor:pointer; font-family:inherit; color:var(--ink); box-shadow:0 3px 10px rgba(0,0,0,.07)}
+  .word .e{font-size:48px; line-height:1.1}
+  .word .w{font-size:24px; font-weight:800}
+  .word .m{font-size:15px; color:var(--soft)}
+  .tip{font-size:17px; color:var(--soft)}
+  .board{width:100%; background:#fff; border-radius:20px; padding:12px; box-shadow:0 3px 10px rgba(0,0,0,.08)}
+  .tools{display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center; margin-bottom:10px}
+  .sw{width:46px; height:46px; border-radius:50%; border:4px solid #fff; box-shadow:0 0 0 2px #ccd; cursor:pointer}
+  .sw.on{box-shadow:0 0 0 4px var(--ink); transform:scale(1.12)}
+  .tool{font-family:inherit; font-size:18px; font-weight:700; background:#f1f2f8; border:3px solid #d7d9e8; border-radius:14px; padding:6px 12px; cursor:pointer; color:var(--ink)}
+  .tool.on{border-color:var(--c); background:#fff7d6}
+  #cv{width:100%; aspect-ratio:5/3; border:3px solid #e3e5f0; border-radius:12px; touch-action:none; display:block; background:#fff; cursor:crosshair}
+  .write{width:100%; display:flex; flex-direction:column; gap:10px; text-align:left; font-size:clamp(18px,1.8vw,24px)}
+  .write input{font-family:inherit; font-size:clamp(22px,2.4vw,34px); padding:.3em .6em; border:4px solid var(--c); border-radius:16px; width:100%}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{font-family:inherit; font-size:20px; font-weight:700; border:none; background:var(--c); color:#fff; border-radius:999px; padding:.25em .8em; cursor:pointer}
+  .save{font-family:inherit; font-size:clamp(22px,2.2vw,30px); font-weight:800; color:#fff; background:var(--green); border:none; border-radius:18px; padding:.45em 1.2em; box-shadow:0 5px 0 rgba(0,0,0,.2); cursor:pointer}
+  .save:active{transform:translateY(3px); box-shadow:0 2px 0 rgba(0,0,0,.2)}
+  .done{display:none; background:#e3f7ea; border:4px solid var(--green); border-radius:18px; padding:.6em 1.2em; font-size:clamp(18px,1.8vw,24px)}
+  .done b{color:#126b3a}
+  .steps{text-align:left; margin:.4em 0 0; padding-left:1.3em}
+</style>
+</head>
+<body>
+<div class="bar">🌸 Uno o más de uno &nbsp;•&nbsp; Dibuja</div>
+<main>
+  <div class="card">Draw <b>one</b> cup and <b>some</b> cups. Or draw <b>one</b> flower and <b>some</b> flowers.
+    <div class="en">Then write a Spanish label for your drawing.</div></div>
+
+  <div class="bank" id="bank"></div>
+  <div class="tip">Tap a card to hear the word.</div>
+
+  <div class="board">
+    <div class="tools" id="tools"></div>
+    <canvas id="cv" width="1200" height="720"></canvas>
+  </div>
+
+  <div class="write">
+    <label for="txt"><b>Write in Spanish:</b> <span class="tip">Example: un vaso / unos vasos</span></label>
+    <input id="txt" type="text" autocomplete="off" spellcheck="false" placeholder="un vaso / unos vasos">
+    <div class="chips" id="chips"></div>
+    <div class="tip">Tap a word to add it. You can also type.</div>
+  </div>
+
+  <button class="save" id="save">💾 Save my drawing</button>
+  <div class="done" id="done">
+    <b>✓ Saved!</b> Your picture is in your <b>Downloads</b> folder: <b>4B-One-or-More-drawing.png</b>
+    <ol class="steps">
+      <li>Go back to the assignment in Teams.</li>
+      <li>Click <b>+ Add work</b>, then <b>Upload from this device</b>.</li>
+      <li>Open <b>Downloads</b> and pick your picture.</li>
+      <li>Click <b>Turn in</b>.</li>
+    </ol>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const glass = () => `<svg viewBox="0 0 100 100" style="width:1em;height:1em;vertical-align:bottom"><path d="M24 10 L76 10 L68 92 L32 92 Z" fill="#eaf6ff" stroke="#3b82f6" stroke-width="4" stroke-linejoin="round"/><path d="M28.5 46 L71.5 46 L68 92 L32 92 Z" fill="#7cc4f5"/><path d="M24 10 L76 10 L68 92 L32 92 Z" fill="none" stroke="#3b82f6" stroke-width="4" stroke-linejoin="round"/><line x1="34" y1="18" x2="38" y2="80" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/></svg>`;
+
+/* read aloud with the device's Spanish voice */
+let esVoice = null;
+const canSpeak = 'speechSynthesis' in window;
+function pickVoice(){ if (!canSpeak) return; const vs = speechSynthesis.getVoices(); esVoice = vs.find(v => /^es[-_](MX|US|419)/i.test(v.lang)) || vs.find(v => /^es/i.test(v.lang)) || null; }
+if (canSpeak){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function say(t){ if (!canSpeak) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = esVoice ? esVoice.lang : 'es-MX'; if (esVoice) u.voice = esVoice; u.rate = .85; speechSynthesis.speak(u); }
+
+/* word cards and chips */
+const WORDS = [[glass(),'un vaso','one cup'],[glass()+glass(),'unos vasos','some cups'],['🌸','una flor','one flower'],['🌸🌸','unas flores','some flowers']];
+$('bank').innerHTML = WORDS.map(w => `<button class="word" data-say="${w[1]}"><div class="e">${w[0]}</div><div class="w">${w[1]}</div><div class="m">${w[2]}</div></button>`).join('');
+document.querySelectorAll('.word').forEach(b => b.onclick = () => say(b.dataset.say));
+$('chips').innerHTML = ['un vaso','unos vasos','una flor','unas flores','Hay','/'].map(w => `<button class="chip">${w}</button>`).join('');
+const txt = $('txt');
+document.querySelectorAll('.chip').forEach(b => b.onclick = () => { if (b.textContent !== '/') say(b.textContent); txt.value = (txt.value.trim() + ' ' + b.textContent).trim(); });
+
+/* drawing board: 8 colors, eraser, undo, clear */
+const COLORS = [['#1f2340','black'],['#ef4444','red'],['#f97316','orange'],['#facc15','yellow'],['#22c55e','green'],['#3b82f6','blue'],['#a855f7','purple'],['#8b5a2b','brown']];
+let strokes = [], color = COLORS[0][0], erase = false, cur = null;
+$('tools').innerHTML = COLORS.map(c => `<button class="sw" data-c="${c[0]}" title="${c[1]}" style="background:${c[0]}"></button>`).join('') +
+  '<button class="tool" id="eraser">🧽 Eraser</button><button class="tool" id="undo">↩️ Undo</button><button class="tool" id="wipe">🗑️ Clear</button>';
+const cv = $('cv'), ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+function redraw(){
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  strokes.forEach(sk => {
+    ctx.strokeStyle = sk.c; ctx.lineWidth = sk.w; ctx.beginPath();
+    sk.p.forEach(([x, y], k) => k ? ctx.lineTo(x * W, y * H) : ctx.moveTo(x * W, y * H));
+    if (sk.p.length === 1) ctx.lineTo(sk.p[0][0] * W + .1, sk.p[0][1] * H);
+    ctx.stroke();
+  });
+}
+function pick(){
+  document.querySelectorAll('.sw').forEach(b => b.classList.toggle('on', !erase && b.dataset.c === color));
+  $('eraser').classList.toggle('on', erase);
+  cv.style.cursor = erase ? 'cell' : 'crosshair';
+}
+document.querySelectorAll('.sw').forEach(b => b.onclick = () => { color = b.dataset.c; erase = false; pick(); });
+$('eraser').onclick = () => { erase = true; pick(); };
+$('undo').onclick = () => { strokes.pop(); redraw(); };
+$('wipe').onclick = () => { if (strokes.length && confirm('Clear the whole drawing?')){ strokes = []; redraw(); } };
+const pt = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
+cv.onpointerdown = e => { e.preventDefault(); cv.setPointerCapture(e.pointerId); cur = {c: erase ? '#fff' : color, w: erase ? 40 : 9, p:[pt(e)]}; strokes.push(cur); redraw(); };
+cv.onpointermove = e => { if (!cur) return; cur.p.push(pt(e)); redraw(); };
+cv.onpointerup = cv.onpointercancel = () => { cur = null; };
+
+/* save picture + sentence as one PNG */
+$('save').onclick = () => {
+  const out = document.createElement('canvas'); out.width = W; out.height = H + 140;
+  const o = out.getContext('2d');
+  o.fillStyle = '#fff'; o.fillRect(0, 0, out.width, out.height);
+  o.drawImage(cv, 0, 0);
+  o.fillStyle = '#1f2340'; o.font = 'bold 48px Segoe UI, Arial, sans-serif'; o.textAlign = 'center';
+  o.fillText(txt.value || '', W / 2, H + 85);
+  const a = document.createElement('a');
+  a.download = '4B-One-or-More-drawing.png';
+  a.href = out.toDataURL('image/png'); a.click();
+  $('done').style.display = 'block';
+};
+window.addEventListener('beforeunload', e => { if (strokes.length && $('done').style.display !== 'block'){ e.preventDefault(); e.returnValue = ''; } });
+pick(); redraw();
+</script>
+</body>
+</html>
