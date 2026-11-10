@@ -197,6 +197,7 @@
 
 <script>
 /* ---------- helpers for visuals ---------- */
+const glass = () => `<svg viewBox="0 0 100 100" style="width:1em;height:1em;vertical-align:bottom"><path d="M24 10 L76 10 L68 92 L32 92 Z" fill="#eaf6ff" stroke="#3b82f6" stroke-width="4" stroke-linejoin="round"/><path d="M28.5 46 L71.5 46 L68 92 L32 92 Z" fill="#7cc4f5"/><path d="M24 10 L76 10 L68 92 L32 92 Z" fill="none" stroke="#3b82f6" stroke-width="4" stroke-linejoin="round"/><line x1="34" y1="18" x2="38" y2="80" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/></svg>`;   // drawn drinking glass for un vaso
 const row = (...items) => '<div class="vis-row">' + items.map(i =>
   Array.isArray(i) ? `<div><span>${i[0]}</span><span class="lbl">${i[1]}</span></div>` : `<div><span>${i}</span></div>`
 ).join('') + '</div>';
@@ -236,7 +237,7 @@ const TOPICS = [
   goal:"I can use un or una with a word.<br>I can say one thing or more than one.",
   words:[],
   vocab:[{head:"un / una", sub:"one", words:[["🛍️","una bolsa","a bag"],["📕","un libro","a book"],["🏐","una pelota","a ball"],["👒","un sombrero","a hat"]]},
-         {head:"Uno y más de uno", sub:"One and more than one", words:[["🥤","un vaso","one cup"],["🥤🥤","unos vasos","some cups"],["🌸","una flor","one flower"],["🌸🌸","unas flores","some flowers"]]}],
+         {head:"Uno y más de uno", sub:"One and more than one", words:[[glass(),"un vaso","one cup"],[glass()+glass(),"unos vasos","some cups"],["🌸","una flor","one flower"],["🌸🌸","unas flores","some flowers"]]}],
   sounds:[{title:"Las letras ll", syl:["lla","lle","lli","llo","llu"], words:[["llave","LLA-ve"],["calle","CA-lle"],["lluvia","LLU-via"]], tip:"The two letters ll work as a team. Don't say two separate l sounds.", talk:[["¿Qué es?","What is it?"],["Es un libro.","It is a book."],["¿Y esto?","And this?"],["Es una pelota.","It is a ball."]]},
     {title:"Más palabras con ll", syl:["lla","lle","lli","llo","llu"], words:[["silla","SI-lla"],["pollo","PO-llo"],["gallina","ga-LLI-na"]], tip:"Say the whole word, then make it more than one: silla, sillas.", talk:[["¿Qué hay en la mesa?","What is on the table?"],["Hay unos vasos.","There are some cups."],["¿Y flores?","And flowers?"],["Sí. Hay unas flores.","Yes. There are some flowers."]]}],
   turns:[
@@ -245,7 +246,7 @@ const TOPICS = [
     {tell:true, pic:"bolsa", title:"La bolsa de Leo", lines:["Leo abre una bolsa.","Hay un libro.","Hay una pelota.","Leo saca un sombrero."]},
     {pic:"bolsa", dir:"Answer about the story. A or B?", q:"¿Hay un libro o dos libros?", choices:["un libro","dos libros"], c:0, ans:"Hay un libro.", en:"There is one book."},
     {pic:"bolsa", dir:"One more question about the story!", q:"¿Qué saca Leo?", ans:"Un sombrero.", en:"A hat. (Leo takes out a hat.)"},
-    {dir:"Look! <b>One</b> or <b>more than one</b>?", vis:"🥤", q:"¿Un vaso o unos vasos?", ans:"Un vaso.", en:"One cup."},
+    {dir:"Look! <b>One</b> or <b>more than one</b>?", vis:glass(), q:"¿Un vaso o unos vasos?", ans:"Un vaso.", en:"One cup."},
     {dir:"Pick A or B. Type the letter in the chat.", vis:rep("🌸",4), q:"¿Qué es?", choices:["una flor","unas flores"], c:1, ans:"Unas flores.", en:"Some flowers."},
     {dir:"Fill in the blank. A, B, or C?", vis:"🌸", q:'Hay <span class="blank"></span> flor.', choices:["un","una","unas"], c:1, ans:"Hay una flor.", en:"There is one flower."},
     {tell:true, pic:"mesa", title:"Una mesa para compartir", lines:["Ana pone unos vasos.","Leo pone unas flores.","Hay tres vasos.","Hay tres flores."]},
