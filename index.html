@@ -550,23 +550,53 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--){ co
 const strip = h => String(h).replace(/<br\s*\/?>/gi, '. ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g,' ').replace(/&bull;/g,',').replace(/[«»“”]/g,'').replace(/\s+/g,' ').trim();
 const $ = id => document.getElementById(id);
 
-/* ---------- read aloud (device Spanish voice) ---------- */
-const canSpeak = 'speechSynthesis' in window;
-let esVoice = null;
+/* ---------- read aloud ----------
+   Recorded teacher audio first (audio/CLASS-###.mp3, numbered like the recording list).
+   If a clip isn't uploaded yet, the device's Spanish voice reads the line instead. */
+const AUDIO = {"una bolsa": 1, "un libro": 2, "una pelota": 3, "un sombrero": 4, "un vaso": 5, "unos vasos": 6, "una flor": 7, "unas flores": 8, "es un libro": 9, "qué es": 10, "es una pelota": 11, "leo abre una bolsa": 12, "hay un libro": 13, "hay una pelota": 14, "leo saca un sombrero": 15, "hay un libro o dos libros": 16, "qué saca leo": 17, "un vaso o unos vasos": 19, "hay una flor": 22, "ana pone unos vasos": 23, "leo pone unas flores": 24, "hay tres vasos": 25, "hay tres flores": 26, "cuántos vasos hay": 27, "una flor ➜": 28, "hay unas flores": 29, "llave": 30, "calle": 31, "lluvia": 32, "y esto": 33, "silla": 34, "pollo": 35, "gallina": 36, "qué hay en la mesa": 37, "hay unos vasos": 38, "y flores": 39, "sí hay unas flores": 40, "un vaso / unos vasos": 41, "hay": 42, "el fútbol": 43, "el tenis": 44, "correr": 45, "nadar": 46, "qué deporte es": 47, "me gusta nadar": 49, "me gusta correr": 50, "qué te gusta": 51, "me gusta el tenis": 52, "a ana le gusta correr": 53, "a leo le gusta el fútbol": 54, "ana corre en el parque": 55, "leo juega al fútbol": 56, "qué le gusta a ana": 57, "gente": 58, "gigante": 59, "girasol": 60, "me gusta nadar y a ti": 61, "qué bien": 62, "en el parque": 63, "en el patio": 64, "con ana": 65, "con mis amigos": 66, "dónde": 67, "juego en el parque": 69, "juego con mis amigos": 70, "leo juega con ana": 71, "ana juega en el patio": 72, "después van al parque": 73, "en el parque juegan con sus amigos": 74, "dónde juega ana al principio": 75, "juego en el parque con mis amigos": 77, "gimnasio": 78, "dónde juegas": 79, "con quién": 80, "juego": 82, "animal": 83, "hospital": 84, "color": 85, "natural": 86, "es un animal": 87, "el hospital está aquí": 88, "sí es un hospital": 89, "qué palabra es": 90, "mira el dibujo qué es": 93, "es un perro es un animal": 94, "ana lee la palabra animal": 95, "leo dibuja un perro": 96, "después leen la palabra hospital": 97, "el dibujo ayuda a entender": 98, "qué palabra leen después": 99, "crema": 101, "cristal": 102, "croqueta": 103, "qué palabra reconoces": 104, "cuántos hay": 106, "dónde está": 107, "quién es": 108, "cuántas pelotas hay": 109, "hay tres": 110, "cuántos hay hay tres": 111, "quién es es luna": 112, "luna abre una caja": 113, "hay tres pelotas": 114, "leo pregunta cuántas pelotas hay": 115, "luna dice hay tres": 116, "quién abre la caja": 117, "luna": 118, "qué hay en la caja": 119, "clase": 120, "clavo": 121, "bicicleta": 122, "a la izquierda": 123, "a la derecha": 124, "delante": 125, "detrás": 126, "dónde está la pelota": 127, "está a la derecha": 128, "está a la izquierda": 129, "está detrás de la caja": 130, "está delante de la caja": 131, "hay una caja en el patio": 132, "primero la pelota está a la izquierda": 133, "después la pelota está a la derecha": 134, "al final está detrás de la caja": 135, "dónde está la pelota al final": 136, "está a la izquierda de la caja": 137, "la pelota está detrás de la caja": 138, "primo": 139, "premio": 140, "precio": 141, "aquí": 142, "sí la encontraste": 143, "la pelota está": 144, "de la caja": 145, "pan": 146, "queso": 147, "fruta": 148, "arroz": 149, "agua": 150, "leche": 151, "jugo": 152, "gracias": 153, "de nada": 154, "quiero queso por favor": 156, "qué quieres": 157, "quiero jugo por favor": 158, "luna pone tres vasos": 159, "ana quiere agua": 160, "leo quiere jugo": 161, "los amigos dicen gracias": 162, "quién quiere agua": 163, "ana": 164, "aquí tienes": 165, "plato": 166, "pluma": 167, "playa": 168, "qué quieres beber": 169, "quiero agua por favor": 170, "gracias qué amable": 171, "quiero": 172, "por favor": 173, "grande": 174, "pequeño": 175, "rápido": 176, "lento": 177, "abierto": 178, "cerrado": 179, "la caja es grande": 180, "la otra caja es pequeña": 181, "el conejo va rápido": 182, "una caja es grande": 183, "el caracol va lento": 184, "quién va lento en el cuento": 185, "el caracol": 186, "el libro está abierto o cerrado": 187, "está abierto": 188, "tu libro está abierto": 189, "no está cerrado": 190, "mi caja es grande": 191, "mi caja es pequeña": 192, "me llamo luna tengo ocho años": 193, "llevo un sombrero": 194, "qué lleva luna": 195, "con quién juegas": 196, "tu día con tus amigos": 197};
+const hasTTS = 'speechSynthesis' in window;
+const canSpeak = hasTTS || Object.keys(AUDIO).length > 0;
+const normKey = t => strip(t).toLowerCase().replace(/[¿?¡!.,:;«»“”"]/g,'').replace(/\s+/g,' ').trim();
+let esVoice = null, curAudio = null, playId = 0;
 function pickVoice(){
-  if (!canSpeak) return;
+  if (!hasTTS) return;
   const vs = speechSynthesis.getVoices();
   esVoice = vs.find(v => /^es[-_](MX|US|419)/i.test(v.lang)) || vs.find(v => /^es/i.test(v.lang)) || null;
 }
-if (canSpeak){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-function say(text){
-  if (!canSpeak) return;
-  speechSynthesis.cancel();
+if (hasTTS){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function stopSpeech(){
+  playId++;
+  if (curAudio){ curAudio.pause(); curAudio = null; }
+  if (hasTTS) speechSynthesis.cancel();
+}
+function tts(text, done){
+  if (!hasTTS){ done && done(); return; }
   const u = new SpeechSynthesisUtterance(strip(text).replace(/…/g,''));
   u.lang = esVoice ? esVoice.lang : 'es-MX';
   if (esVoice) u.voice = esVoice;
   u.rate = 0.85;
+  if (done) u.onend = done;
   speechSynthesis.speak(u);
+}
+function playOne(text, id, done){
+  if (id !== playId) return;
+  const n = AUDIO[normKey(text)];
+  if (!n){ tts(text, done); return; }
+  const a = new Audio('audio/' + CLASS_CODE + '-' + String(n).padStart(3, '0') + '.mp3');
+  curAudio = a;
+  let fell = false;
+  const fallback = () => { if (fell || id !== playId) return; fell = true; tts(text, done); };
+  a.onended = () => { if (id === playId && done) done(); };
+  a.onerror = fallback;
+  a.play().catch(fallback);
+}
+function say(text){
+  stopSpeech();
+  const id = playId;
+  const parts = String(text).split('||').map(x => x.trim()).filter(Boolean);
+  let k = 0;
+  const next = () => { if (k < parts.length) playOne(parts[k++], id, next); };
+  next();
 }
 const spk = (text, cls) => canSpeak ? `<button class="spk ${cls||''}" data-say="${encodeURIComponent(strip(text))}" title="Listen">🔊</button>` : '';
 document.addEventListener('click', e => {
@@ -655,7 +685,7 @@ function buildHome(){
     </button>`).join('');
 }
 function goHome(){
-  if (canSpeak) speechSynthesis.cancel();
+  stopSpeech();
   t = null; buildHome();
   $('activity').style.display = 'none'; $('home').style.display = 'flex';
   window.scrollTo(0, 0);
@@ -676,7 +706,7 @@ function finish(){ done.add(s); $('nextBtn').disabled = false; $('nextBtn').clas
 
 /* ---------- render ---------- */
 function render(){
-  if (canSpeak) speechSynthesis.cancel();
+  stopSpeech();
   const tp = TOPICS[t], st = steps[s], box = $('stage');
   document.documentElement.style.setProperty('--c', tp.color);
   $('barIco').textContent = tp.ico;
@@ -714,7 +744,7 @@ function render(){
       <div class="dir">📖 <b>Leemos</b> &nbsp;•&nbsp; Read the story</div>
       <div class="story-wrap">
         ${picHTML(tn.pic, false)}
-        <div class="story big"><div class="story-title">${tn.title} ${canSpeak ? `<button class="spk read-all" data-say="${encodeURIComponent(tn.lines.map(l => strip(Array.isArray(l) ? l[0] : l)).join('. '))}">🔊 Read it to me</button>` : ''}</div>
+        <div class="story big"><div class="story-title">${tn.title} ${canSpeak ? `<button class="spk read-all" data-say="${encodeURIComponent(tn.lines.map(l => strip(Array.isArray(l) ? l[0] : l)).join(' || '))}">🔊 Read it to me</button>` : ''}</div>
           ${tn.lines.map((l, n) => { const es = Array.isArray(l) ? l[0] : l; const en = Array.isArray(l) ? l[1] : (STORY_EN[tn.pic] || [])[n]; return `<div class="sl">${spk(es,'sm')} ${es}${en ? `<span class="sen">${en}</span>` : ''}</div>`; }).join('')}
         </div>
       </div>`;
